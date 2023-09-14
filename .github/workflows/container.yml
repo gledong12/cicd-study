@@ -43,6 +43,3 @@ jobs:
 
       - name: Run Tests
         run: npm test  # 테스트 실행 명령 사용
-
-      - name: Generate Coverage Report
-        run: npm run coverage  # 커버리지 리포트 생성 명령 사용
