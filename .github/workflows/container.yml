@@ -1,38 +1,48 @@
-name: Build and push image to ECR
+name: Build, Test, and Push Image to ECR
 
 on: push
-  
 
 jobs:
-  
-  build:
-    
-    name: Build Image
+
+  build-and-test:
+    name: Build, Test, and Push
     runs-on: ubuntu-latest
 
     steps:
-
-    - name: Check out code
-      uses: actions/checkout@v2
     
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ap-northeast-2
+      - name: Check out code
+        uses: actions/checkout@v2
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-      with:
-        mask-pasword: 'true'
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
 
-    - name: Build, tag, and push image to Amazon ECR
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: cicd-study
-        IMAGE_TAG: sample_image
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: 'true'
+
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: cicd-study
+          IMAGE_TAG: sample_image
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Install dependencies
+        run: npm install  # 또는 프로젝트에 맞는 의존성 설치 명령 사용
+
+      - name: Lint Check
+        run: npm run lint  # 린트 체크 명령 사용
+
+      - name: Run Tests
+        run: npm test  # 테스트 실행 명령 사용
+
+      - name: Generate Coverage Report
+        run: npm run coverage  # 커버리지 리포트 생성 명령 사용
