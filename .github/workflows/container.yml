@@ -2,8 +2,6 @@ name: Build and push image to ECR
 
 on: push
 
-
-
 jobs:
 
   build:
